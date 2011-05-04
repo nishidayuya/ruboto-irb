@@ -21,17 +21,6 @@ require 'java'
 $package_name = ($activity || $service || $broadcast_receiver).package_name
 $package = eval("Java::#{$package_name}")
 
-class Object
-  def self.android
-    Java::android
-  end
-
-  def android
-    Java::android
-  end
-end
-module Java ; undef android ; end
-
 java_import "android.R"
 
 module Ruboto
