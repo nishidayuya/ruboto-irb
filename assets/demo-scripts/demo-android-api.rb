@@ -12,7 +12,8 @@ confirm_ruboto_version(6, false)
 
 ruboto_import_widgets :LinearLayout, :TextView, :RelativeLayout,
   :TableLayout, :TableRow,
-  :Chronometer, :DatePicker, :TimePicker, :EditText, :ToggleButton
+  :Chronometer, :DatePicker, :TimePicker, :EditText, :ToggleButton,
+  :ListView, :Button
 
 java_import "android.os.SystemClock"
 java_import "android.view.Window"
@@ -33,13 +34,14 @@ java_import "android.app.TimePickerDialog"
 java_import "android.app.DatePickerDialog"
 java_import "android.graphics.Typeface"
 java_import "android.content.res.ColorStateList"
+java_import "android.media.MediaPlayer"
 
 ruboto_import "org.ruboto.RubotoView"
 
 class RubotoActivity
   @@lists = {
 #    :main      => %w(App Content Graphics Media OS Text Views),
-    :main       => %w(App Graphics OS Views),
+    :main       => %w(App Graphics Media OS Views),
 #    "App"       => ["Activity", "Alarm", "Dialog" "Intents", 
 #                     "Launcher Shortcuts", "Menus", "Notification", 
 #                     "Preferences", "Search", "Service", "Voice Recognition"],
@@ -57,7 +59,7 @@ class RubotoActivity
 #                     "RoundRects", "ScaleToFit", "SensorTest", 
 #                     "SurfaceView Overlay", "Sweep", "Text Align", "Touch Paint", 
 #                     "Typefaces", "UnicodeChart", "Verticies", "Xfermodes"],
-    "Media"     => nil,
+    "Media"     => ["MediaPlayer"],
     "OS"        => ["Morse Code", "Sensors"],
     "Text"      => nil,
 #    "Views"    => ["Animation", "Auto Complete", "Buttons", "Chronometer", 
@@ -84,6 +86,7 @@ class RubotoActivity
       when "Persistent State"      : persistent_state(context)
       when "Save & Restore State"  : save_and_restore_state(context)
       when "Arcs"                  : arcs(context)
+      when "MediaPlayer"           : mediaplayer(context)
       when "Morse Code"            : morse_code(context)
       when "Sensors"               : sensors(context)
       when "Buttons"               : buttons(context)
@@ -393,6 +396,51 @@ class RubotoActivity
         end
 
         @ruboto_view.invalidate
+      end
+    end
+  end
+
+  #######################################################
+  #
+  # Media
+  #
+
+  #
+  # MediaPlayer Simple
+  #
+  def self.mediaplayer(context)
+    context.start_ruboto_activity "$mediaplayer" do
+      @player = nil
+      setTitle "Media/MediaPlayer"
+      setup_content do
+        linear_layout :orientation => LinearLayout::VERTICAL do
+          @et = edit_text(:text => "/sdcard/jruby/543210.3gp")
+          linear_layout :width => :wrap_content do
+            button :text => "Play"
+            button :text => "Stop"
+          end
+        end
+      end
+      handle_click do |view|
+        case view.getText
+        when "Play"
+          if @player
+            @player.release
+          end
+
+          current_data_path = @et.getText.to_s
+          @player = MediaPlayer.new
+          @player.setDataSource(current_data_path)
+          @player.prepare
+          @player.start
+        when "Stop"
+          if @player
+            @player.release
+            @player = nil
+          else
+            context.toast("already stoppped.")
+          end
+        end
       end
     end
   end
